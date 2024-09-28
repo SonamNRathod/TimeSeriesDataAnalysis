@@ -5,9 +5,6 @@ This repo is related to time series data analysis for creating forecasting model
 
 ## About data
 This dataset contains global temperature compared to the long-term average for each month and for different seasons. The data spans several decades and provides insights into temperature changes over time.
-
-The data used in this project comes from the NASA GISS Surface Temperature Analysis (GISTEMP v4). This dataset contains tables of global and hemispheric monthly means and zonal annual means. The data combines land-surface air and sea-surface water temperature anomalies (Land-Ocean Temperature Index, L-OTI). These values represent deviations from the corresponding means of the period between 1951-1980.
-
 For ease of comparison, this dataset uses meteorological seasons:
 
 	•	DJF (December-January-February): Northern Hemisphere winter.
@@ -45,7 +42,7 @@ This section describes each column in the dataset:
 
 ## Data Collection Methodology
 
-The data was collected from a reliable global temperature monitoring service and reflects monthly and seasonal temperature anomalies. These anomalies are calculated based on the difference between the monthly/seasonal temperature and the long-term average for that same month or season. The data spans from 1880 onward and is updated annually.
+The data used in this project comes from the NASA GISS Surface Temperature Analysis (GISTEMP v4). This dataset contains tables of global and hemispheric monthly means and zonal annual means. The data combines land-surface air and sea-surface water temperature anomalies (Land-Ocean Temperature Index, L-OTI). These values represent deviations from the corresponding means of the period between 1951-1980.
 
 ## Why This Dataset?
 
