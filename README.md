@@ -6,6 +6,17 @@ This repo is related to time series data analysis for creating forecasting model
 ## About data
 This dataset contains global temperature compared to the long-term average for each month and for different seasons. The data spans several decades and provides insights into temperature changes over time.
 
+The data used in this project comes from the NASA GISS Surface Temperature Analysis (GISTEMP v4). This dataset contains tables of global and hemispheric monthly means and zonal annual means. The data combines land-surface air and sea-surface water temperature anomalies (Land-Ocean Temperature Index, L-OTI). These values represent deviations from the corresponding means of the period between 1951-1980.
+
+For ease of comparison, this dataset uses meteorological seasons:
+
+	•	DJF (December-January-February): Northern Hemisphere winter.
+	•	MAM (March-April-May): Northern Hemisphere spring.
+	•	JJA (June-July-August): Northern Hemisphere summer.
+	•	SON (September-October-November): Northern Hemisphere autumn.
+
+The meteorological year spans from December 1 to November 30, denoted as D-N, while the calendar year spans from January to December, denoted as J-D.
+
 ## Data Dictionary
 
 This section describes each column in the dataset:
@@ -40,5 +51,3 @@ The data was collected from a reliable global temperature monitoring service and
 
 This dataset is intriguing because it provides a long-term view of global temperature trends, allowing us to see changes in the climate over time. It is essential for analyzing global warming and climate change impacts, which are among the most pressing issues of our time.
   
-## Data Collection Methodology
-The data comes from the NASA GISS Surface Temperature Analysis (GISTEMP v4). This datasets are tables of global and hemispheric monthly means and zonal annual means. They combine land-surface, air and sea-surface water temperature anomalies (Land-Ocean Temperature Index, L-OTI). The values in the tables are deviations from the corresponding 1951-1980 means.
