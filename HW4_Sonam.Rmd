@@ -26,7 +26,7 @@ temperature_ts <- ts(global_temps_ts$Temperature, start = 1880, end = c(2023,5) 
 plot(temperature_ts, main = "Temperature Anomalies Over Time", ylab = "Temperature Anomaly", xlab = "Year")
 
 # Naive Forecast
-naive_forecast <- naive(temperature_ts, h = 12)
+naive_forecast <- naive(temperature_ts, h = 24)
 plot(naive_forecast)
 ```
 
@@ -37,11 +37,11 @@ plot(naive_forecast)
 plot(naive_forecast, main = "Monthly Naive Forecast (Zoomed In)", ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
 ```
 
-#### After May 2023, the plot displays a flat blue line. This line is the Naive forecast, which assumes that the temperature anomaly from May 2023 will remain constant for the next 12 months. The shaded area around the forecast line represents the 95% prediction intervals. 
+#### The plot displays a flat blue line. This line is the Naive forecast, which assumes that the temperature anomaly will remain constant for the next 24 months. The shaded area around the forecast line represents the 95% prediction intervals. 
 
 ```{r}
 # Applying the Mean Forecast
-mean_forecast <- meanf(temperature_ts, h = 12)
+mean_forecast <- meanf(temperature_ts, h = 24)
 
 # Plot the Mean Forecast
 plot(mean_forecast, main = "Mean Forecast", ylab = "Temperature Anomaly", xlab = "Year")
@@ -58,7 +58,7 @@ plot(mean_forecast, main = "Mean Forecast (Zoomed In)", ylab = "Temperature Anom
 
 ```{r}
 # Applying the Seasonal Naive forecast
-snaive_forecast <- snaive(temperature_ts, h =12)
+snaive_forecast <- snaive(temperature_ts, h =24)
 
 # Plot the Seasonal Naive forecast
 plot(snaive_forecast, main = "Seasonal Naive Forecast", ylab = "Temperature Anomaly", xlab = "Year")
@@ -104,7 +104,7 @@ HW_forecast <- HoltWinters(temperature_ts)
 
 plot(HW_forecast, main = "Holt-Winters Model for Temperature Anomalies")
 
-HW_forecast_future <- forecast(HW_forecast, h = 12)
+HW_forecast_future <- forecast(HW_forecast, h = 24)
 
 plot(HW_forecast_future, main = "Holt-Winters Forecast for Temperature Anomalies")
 
@@ -112,7 +112,7 @@ plot(HW_forecast, main = "Holt-Winters Model for Temperature Anomalies",
      ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
 
 # Forecast for the next 12 months
-HW_forecast_future <- forecast(HW_forecast, h = 12)
+HW_forecast_future <- forecast(HW_forecast, h = 24)
 
 plot(HW_forecast_future, main = "Holt-Winters Forecast for Temperature Anomalies",
      ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
@@ -130,9 +130,9 @@ HW_forecast$gamma
 
 ets_model <- ets(temperature_ts)
 plot(ets_model)
-ets_forecast <- forecast(ets_model, h = 12)
+ets_forecast <- forecast(ets_model, h = 24)
 
-ets_forecast <- forecast(ets_model, h = 12)
+ets_forecast <- forecast(ets_model, h = 24)
 plot(ets_forecast)
 ```
 ```{r}
