@@ -1,0 +1,191 @@
+---
+title: "Assignment4"
+author: "Sonam Rathod"
+date: "2024-10-03"
+output: html_document
+---
+
+```{r}
+# Load necessary libraries
+library(forecast)
+library(tidyverse)
+library(lubridate)
+
+global_temps <- read.csv("~/Downloads/archive/global_temps.csv")
+
+global_temps_ts <- global_temps %>%
+  gather(key = "Month", value = "Temperature", Jan:Dec) %>%
+  mutate(Year = as.Date(paste(Year, match(Month, month.abb), "1", sep = "-"))) %>%
+  select(Year, Temperature)
+global_temps_ts <- na.omit(global_temps_ts)
+
+# Create the time series object
+temperature_ts <- ts(global_temps_ts$Temperature, start = 1880, end = c(2023,5) ,frequency = 12)
+
+# Plot the time series
+plot(temperature_ts, main = "Temperature Anomalies Over Time", ylab = "Temperature Anomaly", xlab = "Year")
+
+# Naive Forecast
+naive_forecast <- naive(temperature_ts, h = 12)
+plot(naive_forecast)
+```
+
+#### The Naive forecasting model is one of the simplest approaches as it uses the last observed value to forecast. The forecasted line for the remaining months of 2023 is constant and flat because the Naive method assumes that future values will be the same as the most recent observation.
+
+
+```{r}
+plot(naive_forecast, main = "Monthly Naive Forecast (Zoomed In)", ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
+```
+
+#### After May 2023, the plot displays a flat blue line. This line is the Naive forecast, which assumes that the temperature anomaly from May 2023 will remain constant for the next 12 months. The shaded area around the forecast line represents the 95% prediction intervals. 
+
+```{r}
+# Applying the Mean Forecast
+mean_forecast <- meanf(temperature_ts, h = 12)
+
+# Plot the Mean Forecast
+plot(mean_forecast, main = "Mean Forecast", ylab = "Temperature Anomaly", xlab = "Year")
+```
+
+#### The forecast is made based on the average of temperature anomalies. The flat blue line represents the future values which is same as the average of all past observations,
+
+```{r}
+plot(mean_forecast, main = "Mean Forecast (Zoomed In)", ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
+
+```
+
+#### It shows the flat line for future even if there is a trend or seasonality. 
+
+```{r}
+# Applying the Seasonal Naive forecast
+snaive_forecast <- snaive(temperature_ts, h =12)
+
+# Plot the Seasonal Naive forecast
+plot(snaive_forecast, main = "Seasonal Naive Forecast", ylab = "Temperature Anomaly", xlab = "Year")
+
+```
+
+#### The snaive forecast uses the last observed seasonal pattern to predict future values. The forecasted line matches the seasonal ups and downs of the temperature anomalies from the previous year.
+
+```{r}
+plot(snaive_forecast, main = "Seasonal Naive Forecast (Zoomed In)", ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
+```
+
+
+```{r}
+# Apply Moving Average with a window of 5
+MA5_forecast <- ma(temperature_ts, order = 5)  
+
+# Plot the original time series
+plot(temperature_ts, main = "Moving Average Smoothing", ylab = "Temperature Anomaly", xlab = "Year", col = "black")
+
+lines(MA5_forecast, col = "blue", lwd = 2, lty = 2) 
+
+# Add a legend to differentiate the series
+legend("topright", legend = c( "5-Month MA"),
+    col = c( "blue"), lty = 1:2, lwd = 2)
+
+```
+
+#### The blue line represents the 5-month Moving Average (MA), which smooths the time series by calculating the average of temperature anomalies. This smoothing process helps to reduce noise in the data, making it easier to identify the trends and patterns.
+
+```{r}
+
+plot(temperature_ts, main = "Zoomed In: Moving Average Smoothing", ylab = "Temperature Anomaly", xlab = "Year", 
+     xlim = c(2015, 2024), col = "black")
+lines(MA5_forecast, col = "blue", lwd = 2, lty = 2) 
+
+# Add a legend to differentiate the series
+legend("topright", legend = c( "5-Month MA"),
+    col = c( "blue"), lty = 1:2, lwd = 2)
+
+# Apply Holt-Winters model
+HW_forecast <- HoltWinters(temperature_ts)
+
+plot(HW_forecast, main = "Holt-Winters Model for Temperature Anomalies")
+
+HW_forecast_future <- forecast(HW_forecast, h = 12)
+
+plot(HW_forecast_future, main = "Holt-Winters Forecast for Temperature Anomalies")
+
+plot(HW_forecast, main = "Holt-Winters Model for Temperature Anomalies",
+     ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
+
+# Forecast for the next 12 months
+HW_forecast_future <- forecast(HW_forecast, h = 12)
+
+plot(HW_forecast_future, main = "Holt-Winters Forecast for Temperature Anomalies",
+     ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2024))
+
+HW_forecast$alpha 
+HW_forecast$beta  
+HW_forecast$gamma 
+```
+
+- Alpha (0.514): Moderately balances recent and historical data to update the level.
+- Beta (0.00038): Very low, indicating a nearly constant trend over time.
+- Gamma (0.169): Slowly adjusts to seasonal changes
+
+```{r}
+
+ets_model <- ets(temperature_ts)
+plot(ets_model)
+ets_forecast <- forecast(ets_model, h = 12)
+
+ets_forecast <- forecast(ets_model, h = 12)
+plot(ets_forecast)
+```
+```{r}
+# Plot the original time series
+plot(temperature_ts, main = "Temperature Anomalies with different model forecasts", ylab = "Temperature Anomaly", xlab = "Year")
+
+# Add the forecasts to the plot
+lines(naive_forecast$mean, col = "blue")       
+lines(mean_forecast$mean, col = "red")
+lines(snaive_forecast$mean, col = "green")
+lines(HW_forecast_future$mean, col = "brown")
+lines(MA5_forecast, col = "orange")
+
+```
+
+```{r}
+
+plot(temperature_ts, main = "Temperature Anomalies with different model forecasts", ylab = "Temperature Anomaly", xlab = "Year", xlim = c(2015, 2025))
+
+# Add the forecasts to the plot
+lines(naive_forecast$mean, col = "blue")       
+lines(mean_forecast$mean, col = "red")
+lines(snaive_forecast$mean, col = "green")
+lines(HW_forecast_future$mean, col = "brown")
+lines(MA5_forecast, col = "orange")
+
+legend("topleft", legend = c("Original", "Naive", "Mean", "Seasonal Naive", "Holt-Winters", "5-Month MA"),
+       col = c("black", "blue", "red", "green", "brown", "orange"), lty = 1:2, lwd = 2)
+
+
+naive_accuracy <- accuracy(naive_forecast)
+mean_accuracy <- accuracy(mean_forecast)
+snaive_accuracy <- accuracy(snaive_forecast)
+HW_accuracy <- accuracy(HW_forecast_future)
+ets_accuracy <- accuracy(ets_forecast)
+
+print(naive_accuracy)
+print(mean_accuracy)
+print(snaive_accuracy)
+print(HW_accuracy)
+print(ets_accuracy)
+
+```
+
+#### RMSE Comparison:
+
+	•	Naive Model: 0.2076
+	•	Mean Accuracy Model: 0.3864
+	•	Seasonal Naïve Model: 0.3954
+	•	Holt-Winters Model: 0.1978
+	•	ETS Model: 0.1887
+
+####Best Model:
+
+The ETS model has the lowest RMSE of 0.1887, making it the best model based on this accuracy measure. This suggests that the ETS model provides the most accurate forecasts compared to the other models.
+
