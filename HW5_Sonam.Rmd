@@ -1,0 +1,95 @@
+---
+title: "HW5_Sonam"
+author: "Sonam Rathod"
+date: "2024-10-10"
+output: html_document
+---
+
+```{r}
+library(forecast)
+library(tidyverse)
+library(lubridate)
+global_temps <- read.csv("~/Downloads/archive/global_temps.csv")
+
+global_temps_ts <- global_temps %>%
+  gather(key = "Month", value = "Temperature", Jan:Dec) %>%
+  mutate(Year = as.Date(paste(Year, match(Month, month.abb), "1", sep = "-"))) %>%
+  select(Year, Temperature)
+global_temps_ts <- na.omit(global_temps_ts)
+
+# Create the time series object
+temperature_ts <- ts(global_temps_ts$Temperature, start = 1880, end = c(2023,5) ,frequency = 12)
+
+temperature_window_ts <- window(temperature_ts, start = c(2015, 1), end = c(2023, 5))
+
+# Plot the zoomed-in time series
+plot(temperature_window_ts, main = "Global Temperature Anomalies", ylab = "Temperature Anomaly", xlab = "Year")
+
+# Perform STL decomposition on time series
+stl_decomp_window <- stl(temperature_window_ts, s.window = "periodic")
+
+# Plot the zoomed-in STL decomposition results
+plot(stl_decomp_window, main = "STL Decomposition")
+```
+
+##### The decomposition separates the data into four components: data, seasonal, trend, and remainder.
+1. The data shows a clear rising trend in recent years, indicating warming temperatures.
+2. The seasonal component is stable, confirming regular yearly patterns.
+3. The remainders are mostly noise, implying  the unexplained variability after accounting for the trend and seasonality.
+
+
+```{r}
+attributes(stl_decomp_window)
+summary(stl_decomp_window)
+```
+
+#### IQR Values
+* STL.seasonal (0.06059) - It is relatively small compared to the trend, indicating that the seasonal variations in the data have limited magnitude.
+* STL.trend (0.46009) - It is the largest, suggesting that the long-term changes in the temperature anomalies account for a significant portion of the total variability.
+* STL.remainder (0.17149) - The component shows some variability, indicating that there are still random fluctuations or noise not captured by the trend or seasonal components.
+* data (0.51000) - The IQR for the original data represents the total spread of the middle 50% of the values in the time series.
+
+```{r}
+# Lets print out a seasonal adjustment
+seasadj(stl_decomp_window)
+# Plot a line on the graph
+plot(temperature_window_ts,ylab = "Temperature Anomaly", xlab = "Year")
+
+lines(seasadj(stl_decomp_window), col="Red")
+```
+
+The black line shows both the long-term trend and repeating seasonal patterns. You can see these seasonal changes as small ups and downs on top of the overall direction of the line.
+
+The red line represents the data after taking out the seasonal changes. This makes it easier to see the true trend without the seasonal ups and downs.
+
+The fact that the red line is going up over time shows a clear increase in temperatures, suggesting that global temperatures are rising.
+
+```{r}
+forecast_stl <- forecast(stl_decomp_window)
+
+forecast_stl <- forecast(stl_decomp_window,h=15)
+forecast_stl
+plot(forecast_stl,ylab = "Temperature Anomaly", xlab = "Year")
+
+```
+
+The black line represents the original time series, while the blue line shows the forecasted values. The forecast suggests a stabilizing pattern, with future values showing less variability compared to recent years. The forecasting approach using STL + ETS captures the overall trend and provides future projections, but the lack of trend and seasonality modeling in ETS (A,N,N) might limit its accuracy.
+
+```{r}
+decomposition <- decompose(temperature_window_ts)
+plot(decomposition)
+```
+
+The trend component clearly shows an upward trajectory, consistent with increasing global temperatures. The seasonal component remains relatively stable, indicating regular fluctuations without significant changes over time.
+
+```{r}
+print(decomposition$type)
+# Each one shows different attributes 
+attributes(decomposition)
+seasadj(decomposition)
+plot(temperature_window_ts, ylab = "Temperature Anomaly", xlab = "Year")
+lines(seasadj(decomposition), col="Red")
+```
+
+### Conclusion
+The analysis highlights a clear upward trend in global temperatures with stable seasonal effects. The current forecast may not fully capture the continued warming trend, suggesting that more sophisticated models should be used for better predictions of future temperature changes.
