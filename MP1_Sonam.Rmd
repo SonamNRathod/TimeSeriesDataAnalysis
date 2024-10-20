@@ -1,0 +1,211 @@
+---
+title: "Assignment MP1"
+author: "Sonam Rathod"
+date: "2024-10-17"
+output: html_document
+---
+#### 1. Create Timeseries
+```{r}
+library(forecast)
+flightVolume <- read.csv("~/Downloads/flightVolume.csv")
+
+reslong_ts <- ts(flightVolume$reslong, start = c(1976, 1), end = c(2016, 11), frequency = 12)
+plot(reslong_ts, main="Time Series of Flight Volume", ylab="Flight Volume", xlab="Time")
+```
+
+There is trend and seasonality both in the dataset.
+
+From 1990-2005, there is an upward trend in data, meaning increase in flight volume. After 2005, trend is bit stable and started decreasing trend around 2010. along with that,there is a clear and consistent seasonal pattern in the data.
+
+#### 2. Verify how much history to include in your analysis. 
+```{r}
+reslong_window_ts <- window(reslong_ts, start= c(2010,1), end = c(2016, 11), frequency = 12)
+plot(reslong_window_ts, main="Time Series with window data of Flight Volume", ylab="Flight Volume", xlab="Time")
+```
+
+From 1990 to 2005, the data indicates a clear upward trend in flight volumes, followed by a decline around 2009. After 2010, the trend stabilizes and remains relatively flat. The significant recession in 2008 likely contributed to the observed dip, with some recovery evident around 2010; however, the market has not returned to its earlier peak levels. 
+
+Focusing on more recent data from 2010 onwards is beneficial for a few reasons. Firstly, recent data is more reflective of the current market dynamics and industry conditions, making it more relevant for forecasting and decision-making. Including older historical data, which spans different economic cycles and industry changes, may introduce noise and reduce the accuracy of the analysis due to its less relevance to present trends. By concentrating on recent data, we can develop models that better capture the current state of the market, leading to more precise and actionable insights.
+
+#### 3. Hypothesize if the dataset has trend, seasonality, or both. 
+
+The dataset has both seasonality and trend.
+
+#### 4. Verify using Acf
+
+```{r}
+acf(reslong_ts, main="ACF Plot for Flight Volume Time Series")
+```
+
+1.	Seasonality: The significant spikes at regular intervals in the ACF plot indicate a strong seasonal pattern in the data. 
+	
+2.	Trend: The presence of slowly decaying correlations in the ACF plot also indicates a trend in the data.
+
+Given these observations, our hypothesis that the dataset has both trend and seasonality appears to be correct. 
+
+#### 5. Verify using decomposition
+
+```{r}
+decomposed_reslong <- decompose(reslong_ts)
+plot(decomposed_reslong)
+```
+
+From 1990 to 2005, flight volumes showed a strong upward trend, followed by a decline around 2010 that eventually leveled off. There is a clear seasonal pattern that repeats every year.
+
+Based on decomposition:
+
+- Trend: The data shows an overall increasing trend over time, although the trend appears to decrease in recent years. 
+
+- Seasonality: The strong repeating pattern in the seasonal component confirms the seasonality.
+
+Hence, our hypothesis is correct, the data has both seasonality and trend.
+
+#### 6. Chose an accuracy measure
+
+Going with common accuracy measures:
+
+  - Mean Absolute Error (MAE)
+
+ - Root Mean Squared Error (RMSE)
+
+  - Mean Absolute Percentage Error (MAPE)
+
+#### 7. Create a forecast model for the next 12 months. Include Naive, Average, Exponential Smoothing, HoltWinters, and Decomposition (both types). 
+
+```{r}
+naive_forecast <- naive(reslong_window_ts, h=12)
+plot(naive_forecast, main="Naive Forecast")
+
+```
+
+**Naive Model**: The simplest model, forecasting that future values will be the same as the last observed value. The forecasted line is constant and flat for the next 12 months.
+
+```{r}
+simple_forecast <- meanf(reslong_window_ts, h=12)
+plot(simple_forecast, main="Simple Mean Forecast")
+
+```
+
+**Simple Average Model**: This forecasts using the mean of all historical observations. It shows the flat line for future even if there is a trend or seasonality. 
+
+```{r}
+ets_forecasting <- ets(reslong_window_ts)
+plot(ets_forecasting)
+```
+
+The ETS model is forecasting both trend and seasonal effects for the next 12 months.
+
+```{r}
+summary(ets_forecasting)
+```
+
+**Smoothing Parameters:**
+
+- Alpha = 0.6933: A high alpha means the model is highly responsive to recent changes in the data.
+
+- Gamma = 1e-04: The gamma value is  low, meaning that the seasonal component is hardly being updated with new data, so the model is depended on historical seasonality patterns.
+	
+```{r}
+hw_forecast <- hw(reslong_window_ts, h=12)
+plot(hw_forecast, main="Holt-Winters Forecast")
+```
+
+**Holt-Winters model** is forecasting both trend and seasonal effects for the next 12 months.
+```{r}
+summary(hw_forecast)
+```
+
+- alpha = 0.4541 
+This controls the smoothing of the level. A value of 0.4541, the model gives reasonable weight to both recent observations and past data when updating the level.
+
+- beta  = 0.0266
+The trend is changing very slowly over time
+
+- gamma = 1e-04 
+The model assumes that the seasonal pattern is fairly consistent over time and doesn’t change much.
+
+```{r}
+res_stl <- stl(reslong_window_ts, s.window = "periodic")
+plot(res_stl, main = "STL Decomposition")
+```
+
+After 2010, the trend is declining and then stabilizes around 2014-2015. This suggests that flight volumes were decreasing slightly after 2010 and then leveled off. The seasonal effect repeats itself consistently each year.
+
+```{r}
+summary(res_stl)
+```
+
+- Seasonality: The seasonal component is about 82.3% of the variation in the data, showing that seasonality is quite strong.
+
+- Trend: The trend is about 22.2% of the variation, which confirms a trend over time.
+
+- Residuals: The remainder component explains 21.3% of the total variation, showing that the random component is relatively small.
+
+```{r}
+plot(reslong_window_ts,ylab = "Flight Departure", xlab = "Year")
+
+lines(seasadj(res_stl), col="Red")
+```
+
+The red line is seasonaliy adjusted version of the black line from a time series model. It captures the underlying trend and general seasonal patterns but lacks the extreme peaks and troughs seen in the original data.
+
+```{r}
+decomposed_additive <- decompose(reslong_window_ts, type = "additive")
+plot(decomposed_reslong)
+```
+
+**Additive Decomposition**: The seasonal and trend components are added together, with constant seasonal variations over time.
+```{r}
+decomposed_multiplicative <- decompose(reslong_window_ts, type = "multiplicative")
+plot(decomposed_multiplicative)
+```
+
+**Multiplicative Decomposition**: The seasonal and trend components are multiplied, with seasonal variations proportional to the trend.
+
+#### 8. Show model rank with accuracy measures
+
+```{r}
+accuracy_naive <- accuracy(naive_forecast)
+accuracy_avg <- accuracy(simple_forecast)
+accuracy_ets <- accuracy(ets_forecasting)
+accuracy_hw <- accuracy(hw_forecast)
+
+# Create a comparison table
+accuracy_table <- data.frame(
+  Model = c("Naive", "Average", "ETS", "Holt-Winters"),
+  MAE = c(accuracy_naive["Training set", "MAE"], accuracy_avg["Training set", "MAE"], accuracy_ets["Training set", "MAE"],accuracy_hw["Training set", "MAE"]),
+  RMSE = c(accuracy_naive["Training set", "RMSE"], accuracy_avg["Training set", "RMSE"], accuracy_ets["Training set", "RMSE"], accuracy_hw["Training set", "RMSE"]),
+  MAPE = c(accuracy_naive["Training set", "MAPE"], accuracy_avg["Training set", "MAPE"], accuracy_ets["Training set", "MAPE"], accuracy_hw["Training set", "MAPE"])
+)
+
+accuracy_table$Rank_MAE <- rank(accuracy_table$MAE)
+accuracy_table$Rank_RMSE <- rank(accuracy_table$RMSE)
+accuracy_table$Rank_MAPE <- rank(accuracy_table$MAPE)
+
+print(accuracy_table)
+```
+
+#### 9. Choose which models and how are you going to use them for Forecasting
+
+Based on the accuracy rank, ETS or Holt-Winters Model is more accurate for forecasting.
+
+#### 10. Provide the forecast for the next 12 months (point and range) and explain why you feel confident with these forecasts
+```{r}
+forecast_12_months <- forecast(ets_forecasting, h = 12)
+plot(forecast_12_months, main = "12-Month Flight Volume Forecast", ylab = "Flight Volume", xlab = "Time")
+```
+
+The blue line represents the forecast for the next 12 months. This is the model is best estimate of future flight volume, based on the data.
+
+```{r}
+print(forecast_12_months)
+summary(ets_forecasting)
+ets_forecasting$par['alpha']
+ets_forecasting$par['gamma']
+```
+
+- alpha = 0.6933, the model is giving moderate weight to more recent observations.
+- gamma = 1e-04, the model is moderately adaptive to changes in the seasonal pattern but still maintains some stability by considering past seasonal cycles.
+
+#### Conclusion
+The alpha and gamma suggest that the model balances between adapting to recent data and maintaining stability. The forecast is well-suited for time series with both trend and seasonality as seen in data.
